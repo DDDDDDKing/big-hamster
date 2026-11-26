@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://qjnqnchqqbuzjvlkytjl.supabase.co; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="按科目选择医学题库，查看题目来源和逐项解析。">
+  <title>大仓鼠 · 医学题库</title>
+  <link rel="stylesheet" href="./site.css">
+  <script type="module" src="./site.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="mast">
+      <a class="brand" href="./"><span class="mark" aria-hidden="true">仓</span>大仓鼠</a>
+      <nav aria-label="账号">
+        <span id="account" hidden></span>
+        <button id="sign-in" type="button" class="btn ghost">登录</button>
+        <button id="sign-up" type="button" class="btn primary">注册开通</button>
+        <button id="sign-out" type="button" class="btn ghost" hidden>退出登录</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <h1>医学题库</h1>
+      <p>按科目选题库。同一科目的历年卷、章节习题和专项练习可以分开刷。</p>
+      <div class="filters">
+        <label for="course-search">搜索科目或题库</label>
+        <input id="course-search" type="search" placeholder="例如：诊断学、ICC、期中试卷">
+      </div>
+    </section>
+    <section id="catalog" aria-label="科目目录" aria-live="polite"></section>
+  </main>
+  <template id="course-card">
+    <a class="course-card">
+      <h2></h2>
+      <p></p>
+      <span></span>
+    </a>
+  </template>
+  <dialog id="login" aria-labelledby="login-title">
+    <button type="button" id="close-auth" class="btn secondary close" aria-label="关闭">×</button>
+    <h2 id="login-title">大仓鼠账号</h2>
+<form id="student-form" class="portal-form">
+      <label for="student-email">邮箱</label>
+      <input id="student-email" type="email" autocomplete="username" required maxlength="254">
+      <label for="student-password">密码</label>
+      <input id="student-password" type="password" autocomplete="current-password" required maxlength="72">
+      <button class="btn primary" type="submit">登录</button>
+      <button class="btn ghost" type="button" data-auth-view="register">注册账号</button>
+      <div class="auth-links">
+        <button type="button" data-auth-view="legacy">旧 ID 迁移</button>
+        <button type="button" data-auth-view="recovery">忘记密码</button>
+      </div>
+    </form>
+
+    <form id="registration-form" class="portal-form" hidden>
+      <label for="registration-email">邮箱（登录账号）</label>
+      <input id="registration-email" type="email" autocomplete="username" required maxlength="254">
+      <a class="btn ghost purchase-link" id="registration-purchase" href="https://m.tb.cn/h.jpobL47?tk=Bm6h66JBwVG" target="_blank" rel="noopener noreferrer">去闲鱼购买 · ¥9.90</a>
+      <label for="registration-key" id="registration-key-label">闲鱼订单编号</label>
+      <input id="registration-key" type="text" autocomplete="off" spellcheck="false" autocapitalize="off"
+        required maxlength="128" aria-describedby="registration-hint">
+      <p id="registration-hint" class="auth-note">付款后，从闲鱼订单详情复制订单编号。注册通过后，管理员会复核订单。</p>
+      <div id="registration-nickname-field" class="admin-field">
+        <label for="registration-nickname">昵称（选填）</label>
+        <input id="registration-nickname" type="text" autocomplete="nickname" maxlength="40"
+          placeholder="留空会生成“学员+四位编号”">
+      </div>
+      <button class="btn primary" type="submit">发送验证码</button>
+      <button class="btn ghost" type="button" data-auth-view="login">返回登录</button>
+    </form>
+
+    <form id="verification-form" class="portal-form" hidden>
+      <p class="auth-note" id="verification-note"></p>
+      <label for="verification-code">邮箱验证码</label>
+      <input id="verification-code" type="text" inputmode="numeric" autocomplete="one-time-code"
+        pattern="[0-9]{6,10}" maxlength="10" required>
+      <label for="verification-password">设置密码</label>
+      <input id="verification-password" type="password" autocomplete="new-password" minlength="8"
+        maxlength="72" required placeholder="至少 8 个字符">
+      <button class="btn primary" id="verification-submit" type="submit">验证并激活账号</button>
+      <div class="auth-links">
+        <button type="button" id="resend-code">重新发送</button>
+        <button type="button" data-auth-view="login">返回登录</button>
+      </div>
+    </form>
+    <p id="login-error" class="auth-message" role="alert" hidden></p>
+
+  </dialog>
+</body>
+</html>
