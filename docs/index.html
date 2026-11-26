@@ -7,13 +7,13 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://qjnqnchqqbuzjvlkytjl.supabase.co; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="description" content="按科目选择医学题库，查看题目来源和逐项解析。">
   <title>大仓鼠 · 医学题库</title>
-  <link rel="stylesheet" href="./site.css">
-  <script type="module" src="./site.js"></script>
+  <link rel="stylesheet" href="./site.css?v=2">
+  <script type="module" src="./site.js?v=2"></script>
 </head>
 <body>
   <header class="top">
     <div class="mast">
-      <a class="brand" href="./"><span class="mark" aria-hidden="true">仓</span>大仓鼠</a>
+      <a class="brand" href="./"><span class="mark" aria-hidden="true"><span class="hamster-mark"><i></i></span></span><span>大仓鼠</span></a>
       <nav aria-label="账号">
         <span id="account" hidden></span>
         <button id="sign-in" type="button" class="btn ghost">登录</button>
@@ -25,20 +25,35 @@
 
   <main id="main">
     <section class="hero">
-      <h1>医学题库</h1>
-      <p>按科目选题库。同一科目的历年卷、章节习题和专项练习可以分开刷。</p>
-      <div class="filters">
-        <label for="course-search">搜索科目或题库</label>
-        <input id="course-search" type="search" placeholder="例如：诊断学、ICC、期中试卷">
+      <div class="hero-copy">
+        <h1>医学题库</h1>
+        <p>按科目查找历年卷、章节习题和专项练习。</p>
+        <div class="filters">
+          <label for="course-search">搜索科目或题库</label>
+          <div class="search-wrap">
+            <input id="course-search" type="search" placeholder="例如：诊断学、ICC、期中试卷">
+          </div>
+        </div>
+        <p id="library-stats" class="library-stats" hidden></p>
       </div>
+      <div class="hero-art" aria-hidden="true"><div class="art-disc"></div><div class="art-notebook"></div><div class="art-book"></div><span class="hamster-mark"><i></i></span></div>
+
     </section>
+    <div class="catalog-top" id="catalog-controls">
+      <h2>按科目浏览</h2>
+      <div class="catalog-filters" role="group" aria-label="筛选科目">
+        <button type="button" data-catalog-filter="indexed" aria-pressed="true">有题库目录</button>
+        <button type="button" data-catalog-filter="all" aria-pressed="false">全部科目</button>
+        <button type="button" data-catalog-filter="open" aria-pressed="false">已开放</button>
+      </div>
+    </div>
     <section id="catalog" aria-label="科目目录" aria-live="polite"></section>
   </main>
   <template id="course-card">
     <a class="course-card">
-      <h2></h2>
-      <p></p>
-      <span></span>
+      <div class="card-icon" aria-hidden="true"></div>
+      <div class="card-copy"><h3></h3><p></p></div>
+      <span class="card-status"></span>
     </a>
   </template>
   <dialog id="login" aria-labelledby="login-title">

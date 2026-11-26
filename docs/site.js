@@ -47,6 +47,8 @@ function element(tag,text,className) {
 }
 
 let courses = [];
+let catalogMode = 'indexed';
+const openBank = bank => bank.status === 'live' || bank.status === 'ready';
 
 function renderBank(bank) {
   const entry = element('article',null,'bank');
@@ -54,13 +56,14 @@ function renderBank(bank) {
   name.append(element('h3',bank.name));
   if (bank.sourceName) name.append(element('p','原文件 · '+bank.sourceName));
   entry.append(name);
-  if (bank.status === 'live' || bank.status === 'ready') {
+  if (openBank(bank)) {
     const link = element('a','进入刷题','btn primary');
+    if (bank.status === 'ready') name.append(element('p','当前可练 '+bank.count+' 题'));
     link.href = bank.href || '#bank-'+bank.id;
     entry.append(link);
   } else {
     entry.append(element('aside',bank.status === 'review'
-      ? '逐项解析待核对'
+      ? '已生成解析，校对中'
       : '正在整理'));
   }
   return entry;
@@ -86,6 +89,8 @@ async function startBank(course, bank) {
 
 function render() {
   routeRevision++;
+  const controls = byId('catalog-controls');
+  controls.hidden = location.hash.startsWith('#course-') || location.hash.startsWith('#bank-');
   panel.replaceChildren();
   if (location.hash.startsWith('#bank-')) {
     const name = location.hash.slice('#bank-'.length);
@@ -100,6 +105,7 @@ function render() {
     const home = element('a','全部科目');
     home.href = '#catalog';
     detail.append(home,element('h2',chosen.name),...chosen.banks.map(renderBank));
+    if (!chosen.banks.length) detail.append(element('p','已收录该科目的资料目录，题库文件正在筛选。'));
     panel.append(detail);
     return;
   }
@@ -107,12 +113,17 @@ function render() {
   const grid = element('div',null,'course-grid');
   for (const course of courses) {
     const names = course.banks.map(bank => bank.name).join(' ');
+    const opened = course.banks.some(openBank);
     if (query && !(course.name+' '+names).toLocaleLowerCase().includes(query)) continue;
+    if (!query && ((catalogMode==='indexed' && !course.banks.length) || (catalogMode==='open' && !opened))) continue;
     const link = byId('course-card').content.firstElementChild.cloneNode(true);
     link.href = '#course-'+course.id;
-    link.querySelector('h2').textContent = course.name;
-    link.querySelector('p').textContent = course.banks.map(bank => bank.name).slice(0,2).join(' · ');
-    link.querySelector('span').textContent = course.banks.length+' 套题库';
+    link.dataset.open = String(opened);
+    link.querySelector('.card-icon').textContent = course.name.slice(0,1);
+    link.querySelector('h3').textContent = course.name;
+    link.querySelector('p').textContent = course.banks.slice(0,2).map(bank => bank.name).join(' · ') || '题库文件正在筛选';
+    link.querySelector('.card-status').textContent = course.banks.length
+      ? course.banks.length+' 套题库'+(opened?' · 可练习':' · 整理中') : '资料目录已收录';
     grid.append(link);
   }
   panel.append(grid.childElementCount ? grid : element('p','没有找到匹配的科目或题库。'));
@@ -122,12 +133,23 @@ search.addEventListener('input', () => {
   if (location.hash.startsWith('#course-') || location.hash.startsWith('#bank-')) history.replaceState(null,'',location.pathname);
   render();
 });
-window.addEventListener('hashchange',render);
+window.addEventListener('hashchange',() => { render(); if (location.hash.startsWith('#course-') || location.hash.startsWith('#bank-')) panel.scrollIntoView({block:'start'}); });
+byId('catalog-controls').addEventListener('click',event => {
+  const filter=event.target.closest('[data-catalog-filter]');
+  if (!filter) return;
+  catalogMode = filter.dataset.catalogFilter;
+  search.value = '';
+  for (const button of document.querySelectorAll('[data-catalog-filter]')) button.setAttribute('aria-pressed',String(button===filter));
+  render();
+});
 
 try {
   const response = await fetch('./catalog.json',{cache:'no-cache'});
   if (!response.ok) throw Error('catalog');
   courses = await response.json();
+  courses.sort((a,b) => Number(b.banks.some(openBank))-Number(a.banks.some(openBank)) || a.name.localeCompare(b.name,'zh-CN'));
+  byId('library-stats').textContent = courses.length+' 个科目 · '+courses.flatMap(course=>course.banks).length+' 套已识别题库';
+  byId('library-stats').hidden = false;
   render();
 } catch {
   panel.textContent = '科目目录暂时无法加载，请刷新后重试。';
